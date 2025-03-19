@@ -4,7 +4,8 @@ import pandas as pd
 
 app = Dash()
 
-data = pd.read_csv('export/days_filtered.csv', low_memory=False)
+data = pd.read_csv('rad_2008_15min.csv', low_memory=False)
+
 
 app.layout = [
     html.H1(children='Fahrradfahrer München', style={'textAlign':'center'}),
@@ -41,9 +42,8 @@ app.layout = [
             {'label': '2022', 'value': '2022'},
             {'label': '2023', 'value': '2023'},
             {'label': '2024', 'value': '2024'},
-            {'label': 'Gesamt', 'value': ''}
         ],
-        value='Gesamt',
+        value='2008',
         id='year'
     ),
     dash_table.DataTable(data=data.to_dict('records'), page_size=100, id='table'),
@@ -56,14 +56,11 @@ app.layout = [
     Input(component_id='year', component_property='value')
 )
 def update_table(location, year):
-    if location and year:
-        return data[(data['zaehlstelle'].str.contains(location)) & (data['datum'].str.contains(year))].to_dict('records')
-    elif location:
+    data = pd.read_csv(f'rad_{year}_15min.csv', low_memory=False)
+    if location:
         return data[data['zaehlstelle'].str.contains(location)].to_dict('records')
-    elif year:
-        return data[data['datum'].str.contains(year)].to_dict('records')
     else:
-        return data
+        return data.to_dict('records')
 
 @callback(
     Output(component_id='graph', component_property='figure'),
@@ -71,14 +68,11 @@ def update_table(location, year):
     Input(component_id='year', component_property='value')
 )
 def update_graph(location, year):
-    if location and year:
-        return px.histogram(data[(data['zaehlstelle'].str.contains(location)) & (data['datum'].str.contains(year))], x='datum', y='gesamt', histfunc='avg')
-    elif location:
-        return px.histogram(data[data['zaehlstelle'].str.contains(location)], x='datum', y='gesamt', histfunc='avg')
-    elif year:
-        return px.histogram(data[data['datum'].str.contains(year)], x='datum', y='gesamt', histfunc='avg')
+    data = pd.read_csv(f'rad_{year}_15min.csv', low_memory=False)
+    if location:
+        return px.histogram(data[data['zaehlstelle'].str.contains(location)], x='datum', y='gesamt', histfunc='sum')
     else:
-        return data
+        return px.histogram(data, x='datum', y='gesamt', histfunc='sum')
 
 if __name__ == '__main__':
     app.run(debug=True)
