@@ -162,6 +162,9 @@ cython_debug/
 # project related
 data/
 
+## local analysis
+data-science/general_data_analysis.py
+
 # macOS related
 /data-science/data_for_generation
 /data-science/export
